@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AAU BVSc GPA Calculator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #f5f0e8;
+    --cream: #ede7d9;
+    --accent: #8b3a0f;
+    --accent2: #2d5a3d;
+    --muted: #7a6f62;
+    --border: #c8bfaf;
+    --highlight: #f9c74f;
+    --card: #faf7f2;
+    --danger: #c0392b;
+    --shadow: rgba(26,20,16,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: clamp(18px, 4vw, 28px) clamp(16px, 4vw, 32px) 22px;
+    border-bottom: 4px solid var(--accent);
+    position: relative;
+    z-index: 1;
+  }
+
+  header .univ {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--highlight);
+    margin-bottom: 6px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  header p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #a89f96;
+    margin-top: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .note-box {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: #fff8e6;
+    border-left: 3px solid var(--highlight);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #6b5a1a;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.6;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 24px 0 10px;
+  }
+
+  .year-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .year-tabs::-webkit-scrollbar { height: 6px; }
+  .year-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+
+  .year-tab, .btn-add-year {
+    flex: 0 0 auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.18s ease;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    min-height: 42px;
+  }
+
+  .year-tab {
+    position: relative;
+    padding-right: 30px;
+  }
+
+  .year-tab:hover, .btn-add-year:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .year-tab.active {
+    background: var(--ink);
+    color: var(--highlight);
+    border-color: var(--ink);
+  }
+
+  .year-tab .del-year {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--danger);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-add-year {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .year-panel { display: none; }
+  .year-panel.active { display: block; }
+
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .summary-card, .cum-stat, .grade-ref, .cumulative-section, .table-wrap {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+
+  .summary-card {
+    padding: 16px 16px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent);
+  }
+
+  .summary-card.green::before { background: var(--accent2); }
+  .summary-card.gold::before { background: var(--highlight); }
+
+  .summary-card .label,
+  .cum-stat .label,
+  .grade-ref .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .summary-card .value {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 36px);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .summary-card .sub {
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .cumulative-section {
+    margin-top: 30px;
+    overflow: hidden;
+  }
+
+  .cumulative-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 18px;
+  }
+
+  .cumulative-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .cumulative-body {
+    padding: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .cum-stat {
+    padding: 16px 16px 14px;
+  }
+
+  .cum-stat .val {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .cum-stat .val.ogpa { color: var(--accent); }
+
+  .year-breakdown {
+    padding: 0 18px 18px;
+  }
+
+  .year-breakdown table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .year-breakdown thead tr {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .year-breakdown th, .year-breakdown td {
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 13px;
+    border-bottom: 1px solid #ece4d7;
+  }
+
+  .year-breakdown th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .year-breakdown td:first-child {
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+  }
+
+  .table-wrap {
+    overflow: auto;
+    margin-bottom: 18px;
+  }
+
+  table.main-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1180px;
+  }
+
+  thead tr {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  thead th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 10px;
+    text-align: center;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  thead th:first-child {
+    text-align: left;
+    padding-left: 18px;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--cream);
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f0ece4; }
+
+  tbody td {
+    padding: 10px 10px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  tbody td:first-child {
+    text-align: left;
+    padding-left: 18px;
+  }
+
+  .subj-name {
+    width: 100%;
+    min-width: 180px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px dashed transparent;
+    padding: 4px 2px;
+    outline: none;
+  }
+
+  .subj-name:focus {
+    border-bottom-color: var(--accent);
+    background: #fff;
+  }
+
+  input.mark-input,
+  .add-subject-row input[type="text"],
+  .add-subject-row input[type="number"],
+  .add-subject-row select {
+    width: 100%;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    outline: none;
+  }
+
+  input.mark-input {
+    text-align: center;
+    max-width: 78px;
+  }
+
+  input.mark-input.credit-input { max-width: 70px; }
+
+  input.mark-input:focus,
+  .add-subject-row input:focus,
+  .add-subject-row select:focus {
+    border-color: var(--accent);
+  }
+
+  input.mark-input::-webkit-outer-spin-button,
+  input.mark-input::-webkit-inner-spin-button,
+  .add-subject-row input[type="number"]::-webkit-outer-spin-button,
+  .add-subject-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input.mark-input[type="number"],
+  .add-subject-row input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  .computed {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .gp-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--cream);
+    color: var(--accent);
+  }
+
+  .gp-badge.high { background: #d4edda; color: var(--accent2); }
+  .gp-badge.mid { background: #fff3cd; color: #856404; }
+  .gp-badge.low { background: #f8d7da; color: var(--danger); }
+
+  .cp-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .noncredit-row td { opacity: 0.72; }
+  .noncredit-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+  }
+
+  .btn-delete-row {
+    border: none;
+    background: transparent;
+    color: #a8a093;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 8px 10px;
+    border-radius: 10px;
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .btn-delete-row:hover { color: var(--danger); background: #fff3f1; }
+
+  .add-subject-row {
+    display: grid;
+    grid-template-columns: 2fr 110px 110px auto;
+    gap: 10px;
+    padding: 14px;
+    background: var(--cream);
+    border-top: 1px solid var(--border);
+    align-items: end;
+  }
+
+  .add-subject-row .full-span { grid-column: 1 / -1; }
+
+  .add-subject-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    user-select: none;
+  }
+
+  .btn-add-subj {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 10px 14px;
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    min-height: 42px;
+    white-space: nowrap;
+  }
+
+  .btn-add-subj:hover { background: #1e3d29; }
+
+  .grade-ref {
+    margin-top: 22px;
+    padding: 14px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .grade-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--cream);
+  }
+
+  .empty-state {
+    padding: 18px;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .summary-bar,
+    .cumulative-body {
+      grid-template-columns: 1fr;
+    }
+
+    .add-subject-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .add-subject-row .full-span {
+      grid-column: 1 / -1;
+    }
+
+    .btn-add-subj {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .container { padding: 18px 12px 48px; }
+
+    .table-wrap {
+      overflow: visible;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    table.main-table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+
+    thead { display: none; }
+
+    tbody tr {
+      margin-bottom: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--card);
+      box-shadow: 0 2px 12px var(--shadow);
+    }
+
+    tbody td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+      padding: 10px 12px;
+      border-bottom: 1px solid #ece4d7;
+    }
+
+    tbody td::before {
+      content: attr(data-label);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      flex: 0 0 44%;
+    }
+
+    tbody td:first-child {
+      display: block;
+      text-align: left;
+      padding: 12px;
+    }
+
+    tbody td:first-child::before { display: none; }
+
+    tbody td:last-child { border-bottom: none; }
+
+    .subj-name {
+      min-width: 0;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    input.mark-input {
+      max-width: 100%;
+      width: 100%;
+    }
+
+    .grade-chip { width: 100%; text-align: center; }
+    .grade-ref { align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="univ">Assam Agricultural University · BVSc &amp; AH</div>
+  <h1>GPA Calculator</h1>
+  <p>LAKHIMPUR COLLEGE OF VETERINARY SCIENCE · 10-POINT GRADING SYSTEM</p>
+</header>
+
+<div class="container">
+  <div class="note-box">
+    ⓘ <strong>Mark scheme:</strong> Enter raw marks here. IA-1 = raw / 4, IA-2 = raw / 4, Theory = raw / 5, Practical = raw / 5. Total = all scaled marks out of 100. GP = Total / 10. Credit Points = GP × Credit Hrs.
+  </div>
+
+  <div class="section-label">Academic Years</div>
+  <div class="year-tabs" id="yearTabs"></div>
+  <div id="yearPanels"></div>
+
+  <div class="cumulative-section" id="cumulativeSection">
+    <div class="cumulative-header">
+      <h2>Cumulative Performance (OGPA)</h2>
+    </div>
+
+    <div class="cumulative-body">
+      <div class="cum-stat">
+        <div class="label">Total Credit Hrs</div>
+        <div class="val" id="cumCrHrs">—</div>
+      </div>
+      <div class="cum-stat">
+        <div class="label">Total Credit Points</div>
+        <div class="val" id="cumCrPts">—</div>
+      </div>
+      <div class="cum-stat">
+        <div class="label">OGPA</div>
+        <div class="val ogpa" id="cumOGPA">—</div>
+      </div>
+    </div>
+
+    <div class="year-breakdown" id="yearBreakdown"></div>
+  </div>
+
+  <div class="grade-ref">
+    <span class="label">Grade Scale</span>
+    <span class="grade-chip">O · 9.0–10 · Outstanding</span>
+    <span class="grade-chip">A+ · 8.0–8.9 · Excellent</span>
+    <span class="grade-chip">A · 7.0–7.9 · Very Good</span>
+    <span class="grade-chip">B+ · 6.0–6.9 · Good</span>
+    <span class="grade-chip">B · 5.0–5.9 · Average</span>
+    <span class="grade-chip">C · 4.0–4.9 · Pass</span>
+    <span class="grade-chip">F · &lt;4.0 · Fail</span>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'aau_bvsc_gpa_calculator_v2';
+
+  let years = [];
+  let yearCounter = 0;
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function createYear(name) {
+    return {
+      id: ++yearCounter,
+      name,
+      subjects: [],
+      active: false
+    };
+  }
+
+  function createSubject(name = 'New Subject', crHrs = 0, isNonCredit = false) {
+    return {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      name,
+      crHrs,
+      isNonCredit,
+      rawIa1: '',
+      rawIa2: '',
+      rawTheory: '',
+      rawPractical: ''
+    };
+  }
+
+  function toNum(v) {
+    return parseFloat(v) || 0;
+  }
+
+  function scaleIa(raw) {
+    return toNum(raw) / 4;
+  }
+
+  function scaleTheory(raw) {
+    return toNum(raw) / 5;
+  }
+
+  function getScaledMarks(s) {
+    return {
+      ia1: scaleIa(s.rawIa1),
+      ia2: scaleIa(s.rawIa2),
+      theory: scaleTheory(s.rawTheory),
+      practical: scaleTheory(s.rawPractical)
+    };
+  }
+
+  function computeTotal(s) {
+    const m = getScaledMarks(s);
+    return m.ia1 + m.ia2 + m.theory + m.practical;
+  }
+
+  function totalToGP(total) {
+    return total / 10;
+  }
+
+  function gpToGrade(gp) {
+    if (gp >= 9.0) return 'O';
+    if (gp >= 8.0) return 'A+';
+    if (gp >= 7.0) return 'A';
+    if (gp >= 6.0) return 'B+';
+    if (gp >= 5.0) return 'B';
+    if (gp >= 4.0) return 'C';
+    return 'F';
+  }
+
+  function gpBadgeClass(gp) {
+    if (gp >= 7.0) return 'high';
+    if (gp >= 5.0) return 'mid';
+    return 'low';
+  }
+
+  function getActiveYear() {
+    return years.find(y => y.active) || years[0] || null;
+  }
+
+  function setActiveYear(id) {
+    years.forEach(y => y.active = y.id === id);
+    render();
+    saveState();
+  }
+
+  function addYear() {
+    const yearNo = years.length + 1;
+    years.forEach(y => y.active = false);
+    years.push(createYear(`Year ${yearNo}`));
+    years[years.length - 1].active = true;
+    render();
+    saveState();
+  }
+
+  function deleteYear(id) {
+    const idx = years.findIndex(y => y.id === id);
+    if (idx === -1) return;
+    if (!confirm('Delete this year?')) return;
+
+    const wasActive = years[idx].active;
+    years.splice(idx, 1);
+
+    if (years.length === 0) {
+      years.push(createYear('Year 1'));
+      years[0].active = true;
+    } else if (wasActive) {
+      years[Math.max(0, idx - 1)].active = true;
+    }
+
+    render();
+    saveState();
+  }
+
+  function updateSubjectName(yearId, subjectId, value) {
+    const year = years.find(y => y.id == yearId);
+    const subj = year?.subjects.find(s => s.id == subjectId);
+    if (!subj) return;
+    subj.name = value;
+    render();
+    saveState();
+  }
+
+  function updateField(yearId, subjectId, field, value) {
+    const year = years.find(y => y.id == yearId);
+    const subj = year?.subjects.find(s => s.id == subjectId);
+    if (!subj) return;
+    subj[field] = value;
+    render();
+    saveState();
+  }
+
+  function removeSubject(yearId, subjectId) {
+    const year = years.find(y => y.id == yearId);
+    if (!year) return;
+    year.subjects = year.subjects.filter(s => s.id != subjectId);
+    render();
+    saveState();
+  }
+
+  function addSubject(yearId) {
+    const year = years.find(y => y.id == yearId);
+    if (!year) return;
+
+    const nameEl = document.getElementById(`newName-${yearId}`);
+    const crEl = document.getElementById(`newCr-${yearId}`);
+    const ncEl = document.getElementById(`newNc-${yearId}`);
+
+    const name = (nameEl?.value || '').trim();
+    const crHrs = parseFloat(crEl?.value || '0') || 0;
+    const isNonCredit = !!ncEl?.checked;
+
+    if (!name) {
+      alert('Please enter a subject name.');
+      return;
+    }
+
+    year.subjects.push(createSubject(name, crHrs, isNonCredit));
+
+    if (nameEl) nameEl.value = '';
+    if (crEl) crEl.value = '';
+    if (ncEl) ncEl.checked = false;
+
+    render();
+    saveState();
+  }
+
+  function buildPanelHTML(y) {
+    let totalCP = 0;
+    let totalCrHrs = 0;
+
+    y.subjects.forEach(s => {
+      if (s.isNonCredit) return;
+      const cr = parseFloat(s.crHrs) || 0;
+      const gp = totalToGP(computeTotal(s));
+      totalCP += gp * cr;
+      totalCrHrs += cr;
+    });
+
+    const yearGPA = totalCrHrs > 0 ? (totalCP / totalCrHrs) : null;
+
+    const rows = y.subjects.map(s => {
+      const scaled = getScaledMarks(s);
+      const total = computeTotal(s);
+      const gp = totalToGP(total);
+      const grade = gpToGrade(gp);
+      const crHrs = parseFloat(s.crHrs) || 0;
+      const cp = s.isNonCredit ? '—' : (gp * crHrs).toFixed(2);
+
+      return `
+        <tr class="${s.isNonCredit ? 'noncredit-row' : ''}">
+          <td data-label="Subject">
+            <input class="subj-name" value="${escapeHtml(s.name)}"
+              onchange="updateSubjectName('${y.id}','${s.id}',this.value)">
+            ${s.isNonCredit ? '<span class="noncredit-badge">Non-Credit</span>' : ''}
+          </td>
+
+          <td data-label="Credit Hrs">
+            <input type="number" class="mark-input credit-input"
+              value="${s.crHrs}" min="0" max="20" step="0.5"
+              onchange="updateField('${y.id}','${s.id}','crHrs',this.value)">
+          </td>
+
+          <td data-label="IA-1 Raw /40">
+            <input type="number" class="mark-input"
+              value="${s.rawIa1}" placeholder="Raw"
+              min="0" max="40" step="0.01"
+              onchange="updateField('${y.id}','${s.id}','rawIa1',this.value)">
+          </td>
+
+          <td data-label="IA-1 Scaled /10">
+            <span class="computed">${scaled.ia1.toFixed(2)}</span>
+          </td>
+
+          <td data-label="IA-2 Raw /40">
+            <input type="number" class="mark-input"
+              value="${s.rawIa2}" placeholder="Raw"
+              min="0" max="40" step="0.01"
+              onchange="updateField('${y.id}','${s.id}','rawIa2',this.value)">
+          </td>
+
+          <td data-label="IA-2 Scaled /10">
+            <span class="computed">${scaled.ia2.toFixed(2)}</span>
+          </td>
+
+          <td data-label="Theory Raw /200">
+            <input type="number" class="mark-input"
+              value="${s.rawTheory}" placeholder="Raw"
+              min="0" max="200" step="0.01"
+              onchange="updateField('${y.id}','${s.id}','rawTheory',this.value)">
+          </td>
+
+          <td data-label="Theory Scaled /40">
+            <span class="computed">${scaled.theory.toFixed(2)}</span>
+          </td>
+
+          <td data-label="Practical Raw /200">
+            <input type="number" class="mark-input"
+              value="${s.rawPractical}" placeholder="Raw"
+              min="0" max="200" step="0.01"
+              onchange="updateField('${y.id}','${s.id}','rawPractical',this.value)">
+          </td>
+
+          <td data-label="Practical Scaled /40">
+            <span class="computed">${scaled.practical.toFixed(2)}</span>
+          </td>
+
+          <td data-label="Total /100">
+            <span class="computed">${total.toFixed(2)}</span>
+          </td>
+
+          <td data-label="GP">
+            <span class="gp-badge ${gpBadgeClass(gp)}">${gp.toFixed(2)}</span>
+          </td>
+
+          <td data-label="Grade">
+            <span class="computed">${grade}</span>
+          </td>
+
+          <td data-label="Credit Points">
+            <span class="cp-display">${s.isNonCredit ? '—' : cp}</span>
+          </td>
+
+          <td data-label="Action">
+            <button class="btn-delete-row" onclick="removeSubject('${y.id}','${s.id}')" title="Delete subject">✕</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const subjectCount = y.subjects.length;
+
+    return `
+      <div class="summary-bar">
+        <div class="summary-card">
+          <div class="label">${escapeHtml(y.name)} GPA</div>
+          <div class="value">${yearGPA === null ? '—' : yearGPA.toFixed(2)}</div>
+          <div class="sub">${totalCrHrs > 0 ? `${totalCrHrs.toFixed(2)} credit hrs` : 'No credit subjects yet'}</div>
+        </div>
+        <div class="summary-card green">
+          <div class="label">Credit Hrs</div>
+          <div class="value">${totalCrHrs > 0 ? totalCrHrs.toFixed(2) : '—'}</div>
+          <div class="sub">${subjectCount} subject${subjectCount === 1 ? '' : 's'}</div>
+        </div>
+        <div class="summary-card gold">
+          <div class="label">Credit Points</div>
+          <div class="value">${totalCrHrs > 0 ? totalCP.toFixed(2) : '—'}</div>
+          <div class="sub">GP × Credit Hrs</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="main-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Credit Hrs</th>
+              <th>IA-1 Raw /40</th>
+              <th>IA-1 Scaled /10</th>
+              <th>IA-2 Raw /40</th>
+              <th>IA-2 Scaled /10</th>
+              <th>Theory Raw /200</th>
+              <th>Theory Scaled /40</th>
+              <th>Practical Raw /200</th>
+              <th>Practical Scaled /40</th>
+              <th>Total</th>
+              <th>GP</th>
+              <th>Grade</th>
+              <th>Credit Points</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || `<tr><td colspan="15"><div class="empty-state">No subjects added yet.</div></td></tr>`}
+          </tbody>
+        </table>
+
+        <div class="add-subject-row">
+          <div class="full-span">
+            <input type="text" id="newName-${y.id}" placeholder="New subject name">
+          </div>
+          <input type="number" id="newCr-${y.id}" placeholder="Credit Hrs" min="0" step="0.5">
+          <div>
+            <label><input type="checkbox" id="newNc-${y.id}"> Non-Credit</label>
+          </div>
+          <button class="btn-add-subj" onclick="addSubject('${y.id}')">+ Add Subject</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTabs() {
+    const tabs = document.getElementById('yearTabs');
+    tabs.innerHTML = '';
+
+    years.forEach(y => {
+      const btn = document.createElement('button');
+      btn.className = 'year-tab' + (y.active ? ' active' : '');
+      btn.type = 'button';
+      btn.innerHTML = `
+        <span>${escapeHtml(y.name)}</span>
+        <span class="del-year" title="Delete year">×</span>
+      `;
+      btn.onclick = (e) => {
+        if (e.target.classList.contains('del-year')) {
+          deleteYear(y.id);
+        } else {
+          setActiveYear(y.id);
+        }
+      };
+      tabs.appendChild(btn);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn-add-year';
+    addBtn.type = 'button';
+    addBtn.textContent = '+ Add Year';
+    addBtn.onclick = addYear;
+    tabs.appendChild(addBtn);
+  }
+
+  function renderPanels() {
+    const panels = document.getElementById('yearPanels');
+    panels.innerHTML = years.map(y => `
+      <div class="year-panel ${y.active ? 'active' : ''}" id="panel-${y.id}">
+        ${buildPanelHTML(y)}
+      </div>
+    `).join('');
+  }
+
+  function renderCumulative() {
+    let totalCP = 0;
+    let totalCrHrs = 0;
+
+    years.forEach(y => {
+      y.subjects.forEach(s => {
+        if (s.isNonCredit) return;
+        const cr = parseFloat(s.crHrs) || 0;
+        const gp = totalToGP(computeTotal(s));
+        totalCP += gp * cr;
+        totalCrHrs += cr;
+      });
+    });
+
+    const ogpa = totalCrHrs > 0 ? (totalCP / totalCrHrs) : null;
+
+    document.getElementById('cumCrHrs').textContent = totalCrHrs > 0 ? totalCrHrs.toFixed(2) : '—';
+    document.getElementById('cumCrPts').textContent = totalCrHrs > 0 ? totalCP.toFixed(2) : '—';
+    document.getElementById('cumOGPA').textContent = ogpa === null ? '—' : ogpa.toFixed(2);
+
+    const breakdown = document.getElementById('yearBreakdown');
+
+    if (years.length === 0) {
+      breakdown.innerHTML = '';
+      return;
+    }
+
+    breakdown.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Credit Hrs</th>
+            <th>Credit Points</th>
+            <th>GPA</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${years.map(y => {
+            let yCP = 0;
+            let yCr = 0;
+            y.subjects.forEach(s => {
+              if (s.isNonCredit) return;
+              const cr = parseFloat(s.crHrs) || 0;
+              const gp = totalToGP(computeTotal(s));
+              yCP += gp * cr;
+              yCr += cr;
+            });
+            const yGPA = yCr > 0 ? (yCP / yCr) : null;
+            return `
+              <tr>
+                <td>${escapeHtml(y.name)}</td>
+                <td>${yCr > 0 ? yCr.toFixed(2) : '—'}</td>
+                <td>${yCr > 0 ? yCP.toFixed(2) : '—'}</td>
+                <td>${yGPA === null ? '—' : yGPA.toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function render() {
+    renderTabs();
+    renderPanels();
+    renderCumulative();
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ years, yearCounter }));
+    } catch (e) {
+      // ignore storage failures
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.years)) return false;
+      years = parsed.years;
+      yearCounter = parsed.yearCounter || years.reduce((m, y) => Math.max(m, y.id || 0), 0);
+      if (!years.some(y => y.active) && years.length > 0) years[0].active = true;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  window.addYear = addYear;
+  window.deleteYear = deleteYear;
+  window.updateSubjectName = updateSubjectName;
+  window.updateField = updateField;
+  window.removeSubject = removeSubject;
+  window.addSubject = addSubject;
+
+  if (!loadState()) {
+    years.push(createYear('Year 1'));
+    years[0].active = true;
+    saveState();
+  }
+
+  render();
+</script>
+</body>
+</html>
