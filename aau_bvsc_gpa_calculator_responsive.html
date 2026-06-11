@@ -1172,29 +1172,48 @@
       <div class="mobile-subject-list">  
         ${mobileCards || `<div class="empty-state">No subjects added yet.</div>`}  
       </div>  
+<div class="table-wrap">
+  <table class="main-table">
+    <thead><tr>${headers}</tr></thead>
+    <tbody>
+      ${rows || `<tr><td colspan="20"><div class="empty-state">No subjects added yet.</div></td></tr>`}
+    </tbody>
+  </table>
+</div>
 
-      <div class="table-wrap">  
-        <table class="main-table">  
-          <thead><tr>${headers}</tr></thead>  
-          <tbody>  
-            ${rows || `<tr><td colspan="20"><div class="empty-state">No subjects added yet.</div></td></tr>`}  
-          </tbody>  
-        </table>  
+<details class="add-subject-wrap">
+  <summary>+ Add Subject</summary>
+  <div class="add-subject-row">
+    <div class="full-span">
+      <input list="subjectList-${y.id}" type="text"
+             id="newName-${y.id}"
+             placeholder="Search subject name"
+             oninput="handleSubjectNameInput('${y.id}', this.value)">
 
-        <details class="add-subject-wrap">  
-          <summary>+ Add Subject</summary>  
-          <div class="add-subject-row">  
-            <div class="full-span">  
-              <input list="subjectList-${y.id}" type="text" id="newName-${y.id}" placeholder="Search subject name" oninput="handleSubjectNameInput('${y.id}', this.value)">  
-              <datalist id="subjectList-${y.id}">  
-                ${SUBJECT_MASTER.map(s => `<option value="${escapeHtml(s.name)}"></option>`).join('')}  
-              </datalist>  
-            </div>  
-            <input type="number" id="newCr-${y.id}" placeholder="Credit Hrs" min="0" step="0.5">  
-            <div><label><input type="checkbox" id="newNc-${y.id}"> Non-Credit</label></div>  
-            <button class="btn-add-subj" onclick="addSubject('${y.id}')">Add Subject</button>  
-          </div>  
-        </details>  
+      <datalist id="subjectList-${y.id}">
+        ${SUBJECT_MASTER.map(s => `<option value="${escapeHtml(s.name)}"></option>`).join('')}
+      </datalist>
+    </div>
+
+    <input type="number"
+           id="newCr-${y.id}"
+           placeholder="Credit Hrs"
+           min="0"
+           step="0.5">
+
+    <div>
+      <label>
+        <input type="checkbox" id="newNc-${y.id}">
+        Non-Credit
+      </label>
+    </div>
+
+    <button class="btn-add-subj"
+            onclick="addSubject('${y.id}')">
+      Add Subject
+    </button>
+  </div>
+</details>
       </div>`;  
   }  
 
