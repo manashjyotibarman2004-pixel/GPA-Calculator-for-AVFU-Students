@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Migration</title>
+</head>
+<body>
+
+<h2>Uploading curriculum...</h2>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBNtUDu3D9KjITscJG9AwEPxUdgWG5AGFI",
+  authDomain: "avfu-gpa-calculator.firebaseapp.com",
+  projectId: "avfu-gpa-calculator",
+  storageBucket: "avfu-gpa-calculator.firebasestorage.app",
+  messagingSenderId: "527237792911",
+  appId: "1:527237792911:web:a66be1ccd68e11c16ddcfa"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const data = {
+  professionals: {
+    "First Professional": {
+      "Veterinary Anatomy": 7,
+      "Veterinary Physiology": 5,
+      "Livestock Production Management": 6
+    },
+
+    "Second Professional": {
+      "Veterinary Microbiology": 5,
+      "Veterinary Pathology": 6,
+      "Animal Genetics and Breeding": 4,
+      "Animal Nutrition": 4,
+      "Veterinary Biochemistry": 3
+    },
+
+    "Third Professional": {
+      "Veterinary Pharmacology and Toxicology": 5,
+      "Veterinary Public Health and Epidemiology": 4,
+      "Veterinary Parasitology": 5,
+      "Livestock Products Technology": 3,
+      "Veterinary and Animal Husbandry Extension Education": 4,
+      "Veterinary Clinical Practices - I": 1,
+      "Livestock Farm Practices": 2
+    },
+
+    "Fourth Professional": {
+      "Veterinary Surgery and Radiology": 3,
+      "Veterinary Medicine": 5,
+      "Veterinary Gynaecology and Obstetrics": 3,
+      "Veterinary Clinical Practices - II": 6
+    }
+  }
+};
+
+await setDoc(doc(db, "curriculum", "data"), data);
+
+document.body.innerHTML += "<h1>✅ Upload Successful!</h1>";
+
+</script>
+
+</body>
+</html>
