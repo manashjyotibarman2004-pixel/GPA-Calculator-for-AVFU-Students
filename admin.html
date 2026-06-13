@@ -1,34 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVFU GPA Calculator - Admin</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
 </head>
-
 <body>
 
-<h1>Admin Login</h1>
+<div id="loginBox">
+  <h1>Admin Login</h1>
 
-<input
-    type="email"
-    id="email"
-    placeholder="Enter email">
+  <input id="email" type="email" placeholder="Email">
+  <br><br>
 
-<br><br>
+  <input id="password" type="password" placeholder="Password">
+  <br><br>
 
-<input
-    type="password"
-    id="password"
-    placeholder="Enter password">
+  <button id="loginBtn">Login</button>
+</div>
 
-<br><br>
+<div id="adminPanel" style="display:none">
 
-<button id="loginBtn">
-    Login
-</button>
+  <h1>Welcome Admin 🎉</h1>
 
-<p id="status"></p>
+  <p id="userEmail"></p>
+
+  <button id="logoutBtn">
+    Logout
+  </button>
+
+  <hr>
+
+  <h2>Dashboard Coming Soon...</h2>
+
+</div>
 
 <script type="module" src="admin.js"></script>
 

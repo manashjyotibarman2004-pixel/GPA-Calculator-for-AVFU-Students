@@ -31,26 +31,24 @@ loginBtn.onclick = async () => {
 
 onAuthStateChanged(auth, user => {
 
+    const loginBox = document.getElementById("loginBox");
+    const adminPanel = document.getElementById("adminPanel");
+
     if (user) {
 
-        status.innerHTML = `
-            Logged in as
-            <b>${user.email}</b>
+        loginBox.style.display = "none";
+        adminPanel.style.display = "block";
 
-            <br><br>
+        document.getElementById("userEmail").textContent =
+            user.email;
 
-            <button id="logoutBtn">
-                Logout
-            </button>
-        `;
-
-        document
-            .getElementById("logoutBtn")
-            .onclick = () => signOut(auth);
+        document.getElementById("logoutBtn").onclick =
+            () => signOut(auth);
 
     } else {
 
-        status.textContent = "Not logged in.";
+        loginBox.style.display = "block";
+        adminPanel.style.display = "none";
 
     }
 
